@@ -35,3 +35,11 @@ class K9User(AbstractUser):
 
     def __str__(self):
         return f"{self.get_full_name()}"
+    
+    {
+        "email": "k@k9.com",
+        "password": "kendr1ck!!",
+        "password2": "kendr1ck!!",
+        "first_name": "Keith",
+        "last_name": "Hiamond"
+    }
