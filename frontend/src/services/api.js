@@ -100,7 +100,7 @@ export async function completeGoogleOAuth() {
         window.location.href = '/dashboard?google_connected=true';
     } catch (error) {
         console.error('Failed to complete Google OAuth:', error);
-        // window.location.href = '/dashboard?google_error=true';
+        window.location.href = '/dashboard?google_error=true';
         throw error;
     }
 }
