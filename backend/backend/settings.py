@@ -51,11 +51,11 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -111,11 +111,26 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
+# --- Session Settings ---
+# Using database-backed sessions (ensure 'django.contrib.sessions' is migrated)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Set to True if your site is ONLY served over HTTPS in production
+# Must be False for http://localhost development
+SESSION_COOKIE_SECURE = False
+
+# 'Lax' is usually best for balancing security and usability (like OAuth redirects)
+# 'Strict' can break cross-site redirects. 'None' requires SESSION_COOKIE_SECURE=True.
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Consider adding SESSION_COOKIE_AGE for session expiry if needed
+# SESSION_COOKIE_AGE = 1209600 # 2 weeks, in seconds (default)
+
 # --- Google OAuth Settings ---
 GOOGLE_OAUTH2_CLIENT_ID = os.environ.get('GOOGLE_OAUTH2_CLIENT_ID')
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH2_CLIENT_SECRET')
 # This MUST match *exactly* one of the Authorized redirect URIs in your Google Cloud Console
-GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/api/auth/google/callback/'
+GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:5173/google-callback'
 GOOGLE_CALENDAR_SCOPES = ['https://www.googleapis.com/auth/calendar'] # Read/Write access
 
 ROOT_URLCONF = 'backend.urls'
@@ -190,3 +205,33 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',  # Capture INFO and above (DEBUG if you want more)
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        '': {  # Root logger catches all
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'auth_app': {  # Specific to your app
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

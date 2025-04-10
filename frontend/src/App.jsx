@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import GoogleCallbackPage from './pages/GoogleCallbackPage';
 import './App.css'
 
 // Create Auth Context
@@ -93,6 +94,7 @@ function App() {
             path='/'
             element={<Navigate to={ authState.isAuthenticated ? "/dashboard" : "/login" } replace />}
             />
+            <Route path="/google-callback" element={<GoogleCallbackPage />} />
             {/* Catch-all for 404 */}
             <Route path="*" element={ <div>404 Not Found</div> }/>
           </Routes>

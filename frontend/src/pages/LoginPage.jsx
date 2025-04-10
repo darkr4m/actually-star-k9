@@ -27,7 +27,7 @@ export default function LoginPage() {
             localStorage.setItem('refresh_token', tokens.refresh);
 
             // 2. Fetch user details
-            const userResponse = await api.get('/users/me')  // API instance now uses the new token
+            const userResponse = await api.get('/users/me/')  // API instance now uses the new token
             const userData = userResponse.data;
             console.log("User data received: ", userData)
 

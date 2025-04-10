@@ -5,7 +5,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/';
 
 
 const api = axios.create({
-    baseURL: API_BASE_URL
+    baseURL: API_BASE_URL,
+    withCredentials: true,
 });
 
 // --- Axios Interceptor for adding JWT token to requests ---
@@ -35,7 +36,7 @@ api.interceptors.response.use(
             if(refreshToken){
                 try {
                     console.log("Attempting token refresh...")
-                    const response = await axios.post(`${API_BASE_URL}/users/login/refresh`, {
+                    const response = await axios.post(`${API_BASE_URL}/users/login/refresh/`, {
                         refresh: refreshToken,
                     })
                     const newAccessToken = response.data.access;
@@ -70,3 +71,36 @@ api.interceptors.response.use(
 )
 
 export default api;
+
+export async function startGoogleAuth() {
+    try {
+        const response = await api.get('auth/google/redirect/');
+        const { authorization_url } = response.data
+        window.location.href = authorization_url
+    } catch (error) {
+        console.error('Failed to start Google OAuth:', error);
+        throw error;
+    }
+}
+
+export async function completeGoogleOAuth() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        console.log('Sending to backend:', { code, state });  // Debug
+        if (!code || !state) {
+            throw new Error('Missing code or state in callback URL');
+        }
+
+        const response = await api.post('auth/google/callback/', { code, state }, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        console.log(response.data.message);
+        window.location.href = '/dashboard?google_connected=true';
+    } catch (error) {
+        console.error('Failed to complete Google OAuth:', error);
+        // window.location.href = '/dashboard?google_error=true';
+        throw error;
+    }
+}
