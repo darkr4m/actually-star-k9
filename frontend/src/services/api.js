@@ -115,3 +115,8 @@ export async function disconnectGoogle() {
         throw error;
     }
 }
+
+export async function fetchGoogleEvents(){
+    const response = await api.get('/api/v1/calendar/events');
+    return response.data.events
+}
