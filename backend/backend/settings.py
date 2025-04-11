@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'auth_app',
-    'users_app'
+    'users_app',
+    'calendar_app'
 ]
 
 MIDDLEWARE = [

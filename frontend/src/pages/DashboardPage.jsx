@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
-import api, {startGoogleAuth, completeGoogleOAuth, disconnectGoogle} from '../services/api'; // Use the configured api instance
+import api, {startGoogleAuth, completeGoogleOAuth, disconnectGoogle, fetchGoogleEvents} from '../services/api'; // Use the configured api instance
 
 function DashboardPage() {
     const { authState } = useContext(AuthContext);
@@ -39,7 +39,7 @@ function DashboardPage() {
 
     useEffect(() =>{
         handleGoogleOAuthCallback()
-    }, [location.search, navigate, authState.user?.has_google_credentials])
+    }, [location.search, authState.user?.has_google_credentials])
 
 
     const handleConnectGoogle = async () => {
@@ -60,7 +60,7 @@ function DashboardPage() {
             // Optional: Refresh the page or update UI
             window.location.reload();
         } catch (error) {
-            setGoogleStatus({ connected: true, message: `Failed to disconnect Google connection: ${error.message || 'Unknown error'}` });
+            setGoogleStatus({ connected: googleStatus.connected, message: `Failed to disconnect Google connection: ${error.message || 'Unknown error'}` });
         }
     };
 
@@ -74,18 +74,17 @@ function DashboardPage() {
          setGoogleStatus(prev => ({ ...prev, message: ''})); // Clear previous messages
          try {
              console.log("Fetching calendar events...");
-             const response = await api.get('/calendar/events/');
-             console.log("Events received:", response.data);
-             setCalendarEvents(response.data || []);
-             setGoogleStatus(prev => ({ ...prev, message: `Workspaceed ${response.data?.length || 0} events.` }));
+             const events = await fetchGoogleEvents()
+             console.log("Events received:", events);
+             setCalendarEvents(events || []);
+             setGoogleStatus(prev => ({ ...prev, message: `Loaded ${events?.length || 0} events.` }));
          } catch (error) {
               console.error("Failed to fetch calendar events:", error.response?.data || error.message);
               let errorMsg = "Failed to fetch calendar events.";
-              if (error.response?.status === 403) {
+              if (error.response?.status === 400) {
                   errorMsg = "Google account not connected or permission issue. Try reconnecting.";
-                  // Optionally update connection status if backend indicated disconnect
-                  // setGoogleStatus({ connected: false, message: errorMsg });
-              } else if (error.response?.status === 503) {
+                  setGoogleStatus({ connected: false, message: errorMsg });
+              } else if (error.response?.status === 500) {
                    errorMsg = "Could not connect to Google Calendar service. Maybe a token issue? Try reconnecting.";
               }
               setGoogleStatus(prev => ({ ...prev, message: errorMsg }));
@@ -94,6 +93,25 @@ function DashboardPage() {
              setIsLoadingEvents(false);
          }
     };
+
+    useEffect(() => {
+        if(googleStatus.connected) {
+            handleFetchCalendarEvents()
+        }
+    }, [googleStatus.connected])
+
+    function formatDateTime(isoString) {
+        const date = new Date(isoString);
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        };
+        return date.toLocaleString('en-US', options);
+    }
 
     return (
         <div>
@@ -122,7 +140,8 @@ function DashboardPage() {
                          <ul>
                              {calendarEvents.map(event => (
                                  <li key={event.id}>
-                                     {event.summary} ({new Date(event.start.dateTime || event.start.date).toLocaleString()})
+                                    {event.title} - {event.description} - {formatDateTime(event.start)} to {formatDateTime(event.end)}
+                                     {/* {event.summary} ({new Date(event.start.dateTime || event.start.date).toLocaleString()}) */}
                                  </li>
                              ))}
                          </ul>
