@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
-import api, {startGoogleAuth, completeGoogleOAuth} from '../services/api'; // Use the configured api instance
+import api, {startGoogleAuth, completeGoogleOAuth, disconnectGoogle} from '../services/api'; // Use the configured api instance
 
 function DashboardPage() {
     const { authState } = useContext(AuthContext);
@@ -69,6 +69,17 @@ function DashboardPage() {
         }
     };
 
+    const handleDisconnectGoogle = async () => {
+        try {
+            const response = await disconnectGoogle();
+            setGoogleStatus({ connected: true, message: response.message }) // Display success message
+            // Optional: Refresh the page or update UI
+            window.location.reload();
+        } catch (error) {
+            setGoogleStatus({ connected: true, message: `Failed to disconnect Google connection: ${error.message || 'Unknown error'}` });
+        }
+    };
+
     const handleFetchCalendarEvents = async () => {
          if (!googleStatus.connected) {
              setGoogleStatus(prev => ({ ...prev, message: "Please connect Google Calendar first."}));
@@ -119,6 +130,8 @@ function DashboardPage() {
                      <button onClick={handleFetchCalendarEvents} disabled={isLoadingEvents}>
                          {isLoadingEvents ? 'Loading Events...' : 'Fetch Upcoming Events'}
                      </button>
+                     <br />
+                     <button onClick={handleDisconnectGoogle}>Disconnect Google</button>
 
                      <h4>Upcoming Events:</h4>
                      {calendarEvents.length > 0 ? (

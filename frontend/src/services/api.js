@@ -104,3 +104,14 @@ export async function completeGoogleOAuth() {
         throw error;
     }
 }
+
+export async function disconnectGoogle() {
+    try {
+        const response = await api.post('auth/google/disconnect/');
+        console.log(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to disconnect Google:', error.response?.data || error.message);
+        throw error;
+    }
+}
