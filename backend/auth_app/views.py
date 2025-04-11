@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt import authentication
 from google_auth_oauthlib.flow import Flow
 from .models import GoogleCredentials
+import requests
 import logging 
 logger = logging.getLogger(__name__)
 
@@ -242,4 +243,34 @@ class GoogleLoginCallbackView(APIView):
             logger.error(f"Error storing credentials: {e}")
             # Return a JSON error message.
             return Response({"error": "Failed to store credentials"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
+class DisconnectGoogleView(APIView):
+    # Specify that only authenticated users can access this view.
+    permission_classes = [permissions.IsAuthenticated]
+    # Specify that JWT authentication is used to verify the user's identity.
+    authentication_classes = [authentication.JWTAuthentication]
+
+    def post(self, request):
+        try:
+            # 1. Fetch the user's Google credentials
+            credentials = GoogleCredentials.objects.get(user=request.user)
+            access_token = credentials.access_token
+
+            # 2. Revoke the access token with Google
+            revoke_url = 'https://oauth2.googleapis.com/revoke'
+            revoke_response = requests.post(revoke_url, data={"token": access_token})
+            if revoke_response.status_code != 200:
+                logger.warning(f"Failed to revoke Google token: {revoke_response.text}")
+            # Continue even if revocation fails—credential deletion is the priority
+
+            # 3. Delete the credentials from the database
+            credentials.delete()
+            logger.info(f"Google credentials revoked and deleted for user: {request.user.username}")
+            return Response({"message": "Google account disconnected successfully"}, status=status.HTTP_200_OK)
+
+        except GoogleCredentials.DoesNotExist:
+            logger.info(f"No Google credentials found for user: {request.user.username}")
+            return Response({"message": "No Google account connected"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error disconnecting Google: {e}")
+            return Response({"error": "Failed to disconnect Google"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
