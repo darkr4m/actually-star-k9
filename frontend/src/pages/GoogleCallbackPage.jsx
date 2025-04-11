@@ -1,12 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { completeGoogleOAuth } from '../services/api';
 
 function GoogleCallbackPage() {
     const navigate = useNavigate();
     const location = useLocation();
+    const [hasRun, setHasRun] = useState(false)
 
     useEffect(() => {
+        if (hasRun) return;
+        setHasRun(true);
         const params = new URLSearchParams(location.search);
         const code = params.get('code');
         const state = params.get('state');

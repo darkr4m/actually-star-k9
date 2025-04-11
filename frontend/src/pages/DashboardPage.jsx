@@ -41,22 +41,6 @@ function DashboardPage() {
         handleGoogleOAuthCallback()
     }, [location.search, navigate, authState.user?.has_google_credentials])
 
-    // // Check for query params from Google OAuth redirect
-    //  useEffect(() => {
-    //     const params = new URLSearchParams(location.search);
-    //     if (params.get('google_connected') === 'true') {
-    //         setGoogleStatus({ connected: true, message: 'Successfully connected Google Calendar!' });
-    //         // Optionally refetch user data if needed, or rely on initial load
-    //          // Remove query params from URL without reloading page
-    //          navigate(location.pathname, { replace: true });
-    //     } else if (params.get('google_error')) {
-    //          setGoogleStatus({ connected: false, message: `Failed to connect Google Calendar: ${params.get('google_error')}`});
-    //           navigate(location.pathname, { replace: true });
-    //     } else {
-    //         // Update status based on potentially updated user data from context
-    //          setGoogleStatus(prev => ({ ...prev, connected: authState.user?.has_google_credentials }));
-    //     }
-    //  }, [location.search, navigate, authState.user?.has_google_credentials]); // Rerun if search params or user cred status changes
 
     const handleConnectGoogle = async () => {
         // Redirect the user to the backend endpoint which will trigger Google OAuth
