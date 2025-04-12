@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'auth_app',
     'users_app',
-    'calendar_app'
+    'calendar_app',
+    'dogs_app'
 ]
 
 MIDDLEWARE = [
@@ -190,7 +191,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Chicago'
 
 USE_I18N = True
 
