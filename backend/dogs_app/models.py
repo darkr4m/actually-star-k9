@@ -95,7 +95,13 @@ class Dog(models.Model):
         default=StatusChoices.PROSPECTIVE, # Sensible default
         help_text=_("Select the current status of the dog within the system."),
     )  # TODO:
-    photo_path = models.CharField()  # TODO:
+    photo = models.ImageField(
+        verbose_name=_("Photo"),
+        upload_to='dog_photos/',
+        blank=True,
+        null=True,
+        help_text=_("Upload a photo of the dog.")
+    )
     behavioral_notes = models.TextField(
         verbose_name=_("Behavioral Notes"),
         max_length=1000,

@@ -22,7 +22,7 @@ class DogAdmin(admin.ModelAdmin):
         'sex',
         'status',
         'is_altered',
-        # 'display_photo_thumbnail'
+        'display_photo_thumbnail'
     )
 
     list_filter = (
@@ -44,8 +44,8 @@ class DogAdmin(admin.ModelAdmin):
                 'is_altered',
                 'color_markings',
                 'weight_kg',
-                # 'photo',
-                # 'display_photo', # Show current photo (read-only)
+                'photo',
+                'display_photo', # Show current photo (read-only)
             )
         }),
         # Section 2: Behavioral & Training
@@ -85,7 +85,7 @@ class DogAdmin(admin.ModelAdmin):
         'created_at',
         'updated_at',
         'age_display', # Make calculated age read-only
-        # 'display_photo', # Make photo display read-only
+        'display_photo', # Make photo display read-only
         # 'is_rabies_vaccine_current_display', # Make vaccine status read-only
         # Add other calculated/display fields here
     )
@@ -127,19 +127,19 @@ class DogAdmin(admin.ModelAdmin):
     age_display_in_list.short_description = _('Age')
     # Note: Sorting directly on age_display_in_list might be complex; consider sorting by date_of_birth instead
 
-    # def display_photo(self, obj):
-    #     """Displays the dog's photo as an image tag in the admin."""
-    #     if obj.photo:
-    #         return format_html('<img src="{}" style="max-height: 150px; max-width: 150px;" />', obj.photo.url)
-    #     return _("No photo available.")
-    # display_photo.short_description = _('Current Photo')
+    def display_photo(self, obj):
+        """Displays the dog's photo as an image tag in the admin."""
+        if obj.photo:
+            return format_html('<img src="{}" style="max-height: 150px; max-width: 150px;" />', obj.photo.url)
+        return _("No photo available.")
+    display_photo.short_description = _('Current Photo')
 
-    # def display_photo_thumbnail(self, obj):
-    #     """Displays a smaller thumbnail in the list view."""
-    #     if obj.photo:
-    #         return format_html('<img src="{}" style="width: 45px; height: auto;" />', obj.photo.url)
-    #     return "" # Return empty string if no photo
-    # display_photo_thumbnail.short_description = _('Photo')
+    def display_photo_thumbnail(self, obj):
+        """Displays a smaller thumbnail in the list view."""
+        if obj.photo:
+            return format_html('<img src="{}" style="width: 45px; height: auto;" />', obj.photo.url)
+        return "" # Return empty string if no photo
+    display_photo_thumbnail.short_description = _('Photo')
 
 
     # --- QuerySet Optimization ---

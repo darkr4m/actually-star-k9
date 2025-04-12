@@ -203,6 +203,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media - Image uploads
+# Base URL to serve media files from during development
+# http://localhost:8000/media/
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
