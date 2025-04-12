@@ -12,6 +12,8 @@ class DogListCreateView(APIView):
     API View to list all dogs or create a new dog.
     Handles GET (list) and POST (create) requests.
     Uses JWT Authentication.
+    * GET /api/v1/dogs/
+    * POST /api/v1/dogs/
     """
     permission_classes = [permissions.IsAuthenticated] # user must be authenticated (via JWT)
     authentication_classes = [JWTAuthentication]
@@ -32,7 +34,7 @@ class DogListCreateView(APIView):
         """
         dog_data = request.data.copy()
         dog_ser = DogSerializer(data=dog_data)
-        if dog_ser.is_valid:
+        if dog_ser.is_valid():
             dog_ser.save()
             return Response(dog_ser.data, status=status.HTTP_201_CREATED)
         return Response(dog_ser.errors, status=status.HTTP_400_BAD_REQUEST)
