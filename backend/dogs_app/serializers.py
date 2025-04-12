@@ -33,6 +33,8 @@ class DogListSerializer(serializers.ModelSerializer):
             'name',
             'breed',
             'sex',
+            'age_display',
+            'short_description',
             'status',
             'photo', # Include photo URL for potential thumbnails
             'is_altered',
