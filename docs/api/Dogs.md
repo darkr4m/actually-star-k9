@@ -2,7 +2,7 @@
 
 This document describes the API endpoints for managing Dog profiles.
 
-**Base URL:** `/api/` (Assuming the URLs are included under this prefix)
+**Base URL:** `/api/v1/` (Assuming the URLs are included under this prefix)
 
 **Authentication:** All endpoints require JWT Authentication. Requests must include a valid JWT Bearer token in the `Authorization` header:
 
@@ -13,7 +13,7 @@ This document describes the API endpoints for managing Dog profiles.
 
 ## 1. Dog List and Create
 
-**Endpoint:** `/api/dogs/`
+**Endpoint:** `/api/v1/dogs/`
 
 **View:** `DogListCreateAPIView`
 
@@ -36,7 +36,7 @@ This endpoint handles listing existing dogs and creating new dog profiles.
             "id": 1,
             "name": "Buddy",
             "breed": "Golden Retriever",
-            "owner_username": "trainer_jane",
+            "owner": "trainer_jane",
             "sex": "MALE",
             "status": "ACTIVE",
             "photo": "/media/dog_photos/buddy.jpg",
@@ -46,7 +46,7 @@ This endpoint handles listing existing dogs and creating new dog profiles.
             "id": 2,
             "name": "Lucy",
             "breed": "Beagle",
-            "owner_username": "trainer_jane",
+            "owner": "trainer_jane",
             "sex": "FEMALE",
             "status": "INACTIVE",
             "photo": null,
@@ -55,11 +55,11 @@ This endpoint handles listing existing dogs and creating new dog profiles.
     ]
     ```
 
-#### `POST /api/dogs/`
+#### `POST /api/v1/dogs/`
 
 * **Description:** Creates a new dog profile.
 * **Authentication:** Required.
-* **Request Body:** A JSON object representing the new dog. Fields correspond to the `DogSerializer` (excluding read-only fields like `id`, `owner_username`, `created_at`, `updated_at`, `age_display`, `short_description`).
+* **Request Body:** A JSON object representing the new dog. Fields correspond to the `DogSerializer` (excluding read-only fields: `id`, `created_at`, `updated_at`, `age_display`, `short_description`).
     * **Note:** Photo uploads should be sent using `multipart/form-data`, not JSON. The `photo` field in the JSON example below is omitted for clarity.
 
     **Example Request Body:**
@@ -69,6 +69,7 @@ This endpoint handles listing existing dogs and creating new dog profiles.
         "breed": "German Shepherd",
         "date_of_birth": "2022-01-15",
         "sex": "MALE",
+        "owner": "jane",
         "is_altered": false,
         "color_markings": "Black and Tan",
         "weight_kg": 35.5,
@@ -91,7 +92,7 @@ This endpoint handles listing existing dogs and creating new dog profiles.
     ```json
     {
         "id": 3,
-        "owner_username": "trainer_jane",
+        "owner": "jane",
         "age_display": "3 years, 2 months",
         "short_description": "German Shepherd, Male, Intact",
         "name": "Max",
