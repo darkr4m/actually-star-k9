@@ -14,6 +14,7 @@ export default function Navbar(){
                 <>
                     <span> Welcome {authState.user?.first_name}</span>
                     <Link to="/dashboard">Dashboard</Link>
+                    <Link to="/dogs">Dogs</Link>
                     <button onClick={handleLogout}>Logout</button>
                 </>
             ) : (
