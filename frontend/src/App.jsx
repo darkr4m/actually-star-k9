@@ -89,8 +89,17 @@ function App() {
           <Routes>
             <Route path='/login' element={ <LoginPage /> }/>
             <Route path='/signup' element={ <SignupPage /> } />
-            <Route path='/dashboard' element={ <DashboardPage /> } />
-            <Route path='/dogs' element={<DogsPage/>}/>
+            <Route path='/dashboard' element={ 
+              <ProtectedRoute>
+                <DashboardPage /> 
+              </ProtectedRoute>
+            } />
+            <Route path='/dogs' element={
+                <ProtectedRoute>
+                  <DogsPage/>
+                </ProtectedRoute>
+              }
+            />
             {/* Redirect base path */}
             <Route 
             path='/'

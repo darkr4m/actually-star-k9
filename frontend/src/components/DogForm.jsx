@@ -27,10 +27,6 @@ export default function DogForm({dog, onSubmit}){
     const [photoFile, setPhotoFile] = useState(null) // State for the photo file object
     const [ photoPreview, setPhotoPreview] = useState(dog?.photo || null) // State for photo preview URL
     
-    useEffect(() => {
-        console.log('formData state changed:', formData);
-    }, [formData]);
-    
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
@@ -330,8 +326,8 @@ export default function DogForm({dog, onSubmit}){
                             onChange={handleChange}  
                             sx={{marginY: 1}} 
                             id="outlined-basic" 
-                            label="Last Rabies Vaccination" f
-                            ullWidth />
+                            label="Last Rabies Vaccination" 
+                            fullWidth />
                     </Grid>
                     <Grid size={2}>
                         <TextField
