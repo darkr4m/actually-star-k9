@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import DogsPage from './pages/DogsPage';
 import GoogleCallbackPage from './pages/GoogleCallbackPage';
 import './App.css'
 
@@ -89,6 +90,7 @@ function App() {
             <Route path='/login' element={ <LoginPage /> }/>
             <Route path='/signup' element={ <SignupPage /> } />
             <Route path='/dashboard' element={ <DashboardPage /> } />
+            <Route path='/dogs' element={<DogsPage/>}/>
             {/* Redirect base path */}
             <Route 
             path='/'

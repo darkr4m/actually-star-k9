@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Dog
@@ -17,6 +18,7 @@ class DogListCreateView(APIView):
     """
     permission_classes = [permissions.IsAuthenticated] # user must be authenticated (via JWT)
     authentication_classes = [JWTAuthentication]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
         """
@@ -24,7 +26,7 @@ class DogListCreateView(APIView):
         Uses the DogListSerializer for concise output.
         """
         dogs = Dog.objects.all().order_by('name')
-        dogs_ser = DogListSerializer(dogs, many=True)
+        dogs_ser = DogListSerializer(dogs, many=True, context={'request': request})
         return Response(dogs_ser.data)
 
     def post(self, request):
@@ -37,6 +39,7 @@ class DogListCreateView(APIView):
         if dog_ser.is_valid():
             dog_ser.save()
             return Response(dog_ser.data, status=status.HTTP_201_CREATED)
+        print("Serializer Errors:", dog_ser.errors)
         return Response(dog_ser.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
