@@ -165,7 +165,7 @@ class Dog(models.Model):
         blank=True,
         null=True,
         validators=[v.MinLengthValidator(10)],
-        help_text=_("Please enter the name of the dog's primary veterinarian/clinic."),
+        help_text=_("Please enter the phone number of the dog's primary veterinarian/clinic."),
     )
     medical_notes = models.TextField(
         verbose_name=_("Medical Notes / Allergies"),

@@ -10,7 +10,7 @@ def validate_name(name:str) -> str:
     - Is at least 2 characters long.
     - Does not contain newline characters.
     """
-    error_message = _("Improper name format.")
+    error_message = _("Improper name format. Names should be more than 2 characters and can only contain spaces, hyphens, and apostrophes.")
     if not isinstance(name, str):
         raise ValidationError(_("Invalid input type for name. Name should be a string."), code='invalid_type')
     

@@ -27,24 +27,45 @@
     }
 
     const handleFormSubmit = async (formData) => {
-        setLoading(true)
-        setError(null)
         const isEditing = selectedDog && selectedDog.id;
         const url = isEditing ? `/api/v1/dogs/${selectedDog.id}/` : '/api/v1/dogs/'
         const method = isEditing ? 'PATCH' : 'POST'
 
-        if (method === "POST"){
-            try {
-                const result = await api.post(url, formData)
-            } catch (error) {
-                console.error("Failed to save dog: ", error)
-                setError(error.message || 'Failed to save dog profile.');
-                // setView('list')
-            } finally {
-                setLoading(false)
-                setView('list')
+        console.log(`Submitting form via ${method} to ${url}`);
+
+        try {
+            let result;
+            if(method==='PATCH'){
+                result = await api.patch(url, formData)
+                console.log("Update successful:", result);
+                // Update the selected dog locally for immediate feedback in detail view
+                setSelectedDog(prev => ({ ...prev, ...result }));
+            } else {
+                result = await api.post(url, formData)
+                console.log("Create successful:", result);
             }
+            // SUCCESS: Navigate back and potentially refresh list
+            fetchDogs(); // Refresh the list in the background
+            setView(isEditing ? 'detail' : 'list'); // Go to detail after edit, list after add
+            return result; // Resolve the promise for DogForm
+        } catch (error) {
+            console.error(`Failed to ${method === 'POST' ? 'save' : 'update'} dog: `, error);
+            // **RE-THROW THE ERROR** so DogForm's catch block is triggered
+            throw error;
         }
+
+        // if (method === "POST"){
+        //     try {
+        //         const result = await api.post(url, formData)
+        //     } catch (error) {
+        //         console.error("Failed to save dog: ", error)
+        //         setError(error.message || 'Failed to save dog profile.');
+        //         // setView('list')
+        //     } finally {
+        //         setLoading(false)
+        //         setView('list')
+        //     }
+        // }
     }
 
 
