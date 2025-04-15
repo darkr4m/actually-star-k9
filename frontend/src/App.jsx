@@ -1,5 +1,7 @@
 import { useState, useEffect, createContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate} from 'react-router-dom';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import api from './services/api'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar';
@@ -84,6 +86,8 @@ function App() {
 
   return (
     <AuthContext.Provider value={{ authState, handleLogin, handleLogout }}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+
         <Navbar />
         <div className="container">
           <Routes>
@@ -95,11 +99,11 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path='/dogs' element={
-                <ProtectedRoute>
+              <ProtectedRoute>
                   <DogsPage/>
                 </ProtectedRoute>
               }
-            />
+              />
             {/* Redirect base path */}
             <Route 
             path='/'
@@ -110,6 +114,7 @@ function App() {
             <Route path="*" element={ <div>404 Not Found</div> }/>
           </Routes>
         </div>
+        </LocalizationProvider>
     </AuthContext.Provider>
   )
 }

@@ -1,21 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
+import dayjs from 'dayjs'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Grid, Box, Divider, FormControl, TextField, Select, InputLabel, MenuItem, Button } from "@mui/material";
 
 export default function DogForm({dog, onSubmit}){
     const [formData, setFormData] = useState({
         name: dog?.name || '',
         breed: dog?.breed || '',
-        date_of_birth: dog?.date_of_birth || '',
+        date_of_birth: dog?.date_of_birth ? dayjs(dog.date_of_birth) : null,
         sex: dog?.sex || '',
         owner: 'max',
         is_altered: dog?.is_altered ?? "", // Handle null explicitly
         color_markings: dog?.color_markings || '',
         weight_kg: dog?.weight_kg || '',
         status: dog?.status || 'PROSPECTIVE',
-        vaccination_rabies: dog?.vaccination_rabies || '',
-        vaccination_dhpp: dog?.vaccination_dhpp || '',
-        vaccination_bordetella: dog?.vaccination_bordetella || '',
-        parasites: dog?.parasites || '',
+        vaccination_rabies: dog?.vaccination_rabies ? dayjs(dog.vaccination_rabies) : null,
+        vaccination_dhpp: dog?.vaccination_dhpp ? dayjs(dog.vaccination_dhpp) : null,
+        vaccination_bordetella: dog?.vaccination_bordetella ? dayjs(dog.vaccination_bordetella) : null,
+        parasites: dog?.parasites ? dayjs(dog.parasites) : null,
         veterinarian_name: dog?.veterinarian_name || '',
         veterinarian_phone: dog?.veterinarian_phone || '',
         medical_notes: dog?.medical_notes || '',
@@ -54,17 +56,37 @@ export default function DogForm({dog, onSubmit}){
         }
     }
 
+    const handleDateChange = (fieldName, newValue) => {
+        setFormData(prev => ({
+            ...prev,
+            [fieldName]: newValue
+        }))
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault();
-
         const dataToSend = new FormData()
+
+        const dateFieldKeys = [
+            'date_of_birth',
+            'vaccination_rabies',
+            'vaccination_dhpp',
+            'vaccination_bordetella',
+            'parasites'
+        ]
+
         for (const key in formData) {
             // Ensure the key belongs to the object itself, not its prototype
             if (Object.prototype.hasOwnProperty.call(formData, key)) {
                 const value = formData[key];
 
+                if(dateFieldKeys.includes(key)){
+                    if (value && dayjs.isDayjs(value) && value.isValid()){
+                        dataToSend.append(key, value.format('YYYY-MM-DD'));
+                    }
+                }
                 // Handle 'is_altered' specifically: send 'true', 'false', or '' for null
-                if (key === 'is_altered') {
+                else if (key === 'is_altered') {
                     if (value === null) {
                         dataToSend.append(key, ''); // Send empty string for null
                     } else {
@@ -101,6 +123,7 @@ export default function DogForm({dog, onSubmit}){
         }
         // If editing and no new photo, FormData won't include 'photo',
         // backend should handle this as "no change" for PATCH or require it for PUT.
+
 
         console.log([...dataToSend.entries()])
         onSubmit(dataToSend) // Pass FormData to the submit handler
@@ -157,20 +180,23 @@ export default function DogForm({dog, onSubmit}){
                             label="Breed" 
                             helperText="Please enter the dog's breed. Leave blank if unknown." 
                             fullWidth/>
-                        <TextField 
-                            sx={{marginY: 1}}
-                            name="date_of_birth"
+                        <DatePicker
+                            name="date_of_birth" 
+                            label="Date of Birth"
+                            sx={{marginY:1, width:"100%"}} 
                             value={formData.date_of_birth}
-                            onChange={handleChange}  
-                            id="outlined-basic" 
-                            label="Date of Birth" 
-                            helperText="Please enter the dog's approximate date of birth. Leave blank if unknown."
-                            fullWidth />
+                            onChange={(newValue) => handleDateChange('date_of_birth', newValue)}
+                            disableFuture
+                            slotProps={{
+                                textField: {
+                                    helperText:"Please enter the dog's approximate date of birth. Leave blank if unknown."
+                                }
+                            }} />
                     </Grid>
                     <Grid size={2}>
                         <TextField
-                            name="weight"
-                            value={formData.weight}
+                            name="weight_kg"
+                            value={formData.weight_kg}
                             onChange={handleChange}
                             sx={{marginY: 1}} 
                             id="outlined-basic" 
@@ -212,7 +238,14 @@ export default function DogForm({dog, onSubmit}){
                         </FormControl>
                     </Grid>
                     <Grid size={4}>
-                        <TextField sx={{marginY: 1}} id="outlined-basic" label="Color and Markings" fullWidth/>       
+                        <TextField 
+                        name="color_markings"
+                        value={formData.color_markings}
+                        onChange={handleChange}
+                        sx={{marginY: 1}} 
+                        id="outlined-basic" 
+                        label="Color and Markings" 
+                        fullWidth/>       
                     </Grid>
                     <Grid size={2} sx={{alignContent: "center"}}>
                         <Button variant="contained" component="label" fullWidth>
@@ -320,44 +353,60 @@ export default function DogForm({dog, onSubmit}){
                         <Divider textAlign="left">Vaccination Information</Divider>
                     </Grid>
                     <Grid size={2}>
-                        <TextField
-                            name="vaccination_rabies"
+                        <DatePicker
+                            name="vaccination_rabies" 
+                            label="Last Rabies Vaccination"
+                            sx={{marginY:1, width:"100%"}} 
                             value={formData.vaccination_rabies}
-                            onChange={handleChange}  
-                            sx={{marginY: 1}} 
-                            id="outlined-basic" 
-                            label="Last Rabies Vaccination" 
-                            fullWidth />
+                            onChange={(newValue) => handleDateChange('vaccination_rabies', newValue)}
+                            disableFuture
+                            slotProps={{
+                                textField: {
+                                    helperText:"Please enter the date of the dog's last rabies vaccination. Leave blank if unknown."
+                                }
+                            }} />
                     </Grid>
                     <Grid size={2}>
-                        <TextField
-                            name="vaccination_dhpp"
+                        <DatePicker
+                            name="vaccination_dhpp" 
+                            label="Last DHPP Vaccination"
+                            sx={{marginY:1, width:"100%"}} 
                             value={formData.vaccination_dhpp}
-                            onChange={handleChange}  
-                            sx={{marginY: 1}} 
-                            id="outlined-basic" 
-                            label="Last DHPP Vaccination" 
-                            fullWidth />
+                            onChange={(newValue) => handleDateChange('vaccination_dhpp', newValue)}
+                            disableFuture
+                            slotProps={{
+                                textField: {
+                                    helperText:"Please enter the date of the dog's last DHPP vaccination. Leave blank if unknown."
+                                }
+                            }} />
                     </Grid>
                     <Grid size={2}>
-                        <TextField                            
-                            name="vaccination_bordetella"
+                        <DatePicker
+                            name="vaccination_bordetella" 
+                            label="Last Bordetella Vaccination"
+                            sx={{marginY:1, width:"100%"}} 
                             value={formData.vaccination_bordetella}
-                            onChange={handleChange}  
-                            sx={{marginY: 1}} 
-                            id="outlined-basic" 
-                            label="Last Bordetella Vaccination" 
-                            fullWidth />
+                            onChange={(newValue) => handleDateChange('vaccination_bordetella', newValue)}
+                            disableFuture
+                            slotProps={{
+                                textField: {
+                                    helperText:"Please enter the date of the dog's last Bordetella vaccination. Leave blank if unknown."
+                                }
+                            }} />
                     </Grid>
                     <Grid size={2}>
-                        <TextField
-                            name="parasites"
+                    <DatePicker
+                            name="parasites" 
+                            label="Last Parasite Screening"
+                            sx={{marginY:1, width:"100%"}} 
                             value={formData.parasites}
-                            onChange={handleChange}  
-                            sx={{marginY: 1}} 
-                            id="outlined-basic" 
-                            label="Last Parasite Screen" 
-                            fullWidth />
+                            onChange={(newValue) => handleDateChange('parasites', newValue)}
+                            disableFuture
+                            slotProps={{
+                                textField: {
+                                    helperText:"Please enter the date of the dog's last parasite screening. Leave blank if unknown."
+                                }
+                            }} />
                     </Grid>
                     <Grid size={{xs:1, md:2}}>
                         <Button sx={{marginY:1}} variant="outlined" fullWidth>Cancel</Button> 

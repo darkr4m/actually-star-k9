@@ -4,9 +4,10 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from .models import Dog
 from .serializers import DogSerializer, DogListSerializer
+import logging
+logger = logging.getLogger(__name__)
 
 class DogListCreateView(APIView):
     """
@@ -34,6 +35,14 @@ class DogListCreateView(APIView):
         Create a new dog instance.
         Uses the main DogSerializer for validation and creation.
         """
+        # Inside your view method (e.g., create, update)
+        # logger.info("--- Raw Request Data Received ---")
+        # logger.info(f"Request Method: {request.method}")
+        # logger.info(f"Request Content-Type: {request.content_type}")
+        # logger.info(f"Request POST data: {request.POST.dict()}") # For form data
+        # logger.info(f"Request FILES data: {request.FILES.dict()}") # For files
+        # logger.info(f"DRF request.data: {request.data}") # What DRF parses
+        # logger.info("-------------------------------")
         dog_data = request.data.copy()
         dog_ser = DogSerializer(data=dog_data)
         if dog_ser.is_valid():

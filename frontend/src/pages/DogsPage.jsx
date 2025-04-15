@@ -39,9 +39,10 @@
             } catch (error) {
                 console.error("Failed to save dog: ", error)
                 setError(error.message || 'Failed to save dog profile.');
-                setView('list')
+                // setView('list')
             } finally {
                 setLoading(false)
+                setView('list')
             }
         }
     }
