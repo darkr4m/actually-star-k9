@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // Use environment variable for API base URL, fallback for development
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/';
+const API_BASE_URL = 'http://localhost:8000/';
 
 
 const api = axios.create({
@@ -119,4 +119,15 @@ export async function disconnectGoogle() {
 export async function fetchGoogleEvents(){
     const response = await api.get('/api/v1/calendar/events');
     return response.data.events
+}
+
+export async function getDogs() {
+    try {
+        console.log('Fetching data...')
+        const response = await api.get(API_BASE_URL+'api/v1/dogs/')
+        return response.data;
+    } catch (error) {
+        console.error('getDogs() - API Error', error.response || error.message);
+        throw error;
+    }
 }

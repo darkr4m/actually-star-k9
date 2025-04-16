@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
 import api, {startGoogleAuth, completeGoogleOAuth, disconnectGoogle, fetchGoogleEvents} from '../services/api'; // Use the configured api instance
+import Button from '@mui/material/Button';
+import DogsPage from './DogsPage';
 
 function DashboardPage() {
     const { authState } = useContext(AuthContext);
@@ -124,16 +126,16 @@ function DashboardPage() {
             {googleStatus.message && <p style={{ color: googleStatus.connected && !googleStatus.message.includes('Failed') ? 'green' : 'red' }}>{googleStatus.message}</p>}
 
             {!googleStatus.connected ? (
-                <button onClick={handleConnectGoogle}>Connect Google Calendar</button>
+                <Button onClick={handleConnectGoogle}>Connect Google Calendar</Button>
             ) : (
                 <div>
                      <p style={{color: 'green'}}>Google Calendar Connected!</p>
                     {/* Add button to disconnect later if needed */}
-                     <button onClick={handleFetchCalendarEvents} disabled={isLoadingEvents}>
+                     <Button variant="contained" onClick={handleFetchCalendarEvents} disabled={isLoadingEvents}>
                          {isLoadingEvents ? 'Loading Events...' : 'Fetch Upcoming Events'}
-                     </button>
+                     </Button>
                      <br />
-                     <button onClick={handleDisconnectGoogle}>Disconnect Google</button>
+                     <Button variant='outlined' onClick={handleDisconnectGoogle}>Disconnect Google</Button>
 
                      <h4>Upcoming Events:</h4>
                      {calendarEvents.length > 0 ? (
@@ -152,10 +154,7 @@ function DashboardPage() {
             )}
 
              <hr />
-
-             {/* Add other CRM components and functionality here */}
-             <p>Your dog training CRM content goes here...</p>
-
+             <DogsPage />
         </div>
     );
 }

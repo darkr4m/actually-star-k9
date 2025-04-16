@@ -1,16 +1,20 @@
 import { useState, useEffect, createContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate} from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate, useNavigate} from 'react-router-dom';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import api from './services/api'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import DogsPage from './pages/DogsPage';
 import GoogleCallbackPage from './pages/GoogleCallbackPage';
 import './App.css'
 
 // Create Auth Context
 export const AuthContext = createContext(null);
+// import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   const [ authState, setAuthState] = useState({
@@ -23,6 +27,7 @@ function App() {
   const navigate = useNavigate();
 
   const fetchUser = async () => {
+    console.log("fetchUser called. Token exists:", !!authState.token);
     if(authState.token){
       try {
         const response = await api.get('/users/me/'); // Fetch user details
@@ -39,6 +44,7 @@ function App() {
         handleLogout(); // Use logout function to clear everything
       }
     } else {
+      console.log("No token found, setting auth loading false.");
       setAuthState(prev => ({
         ...prev,
         isAuthLoading:false // No token, stop loading
@@ -64,6 +70,7 @@ function App() {
   }
 
   const handleLogout = () => {
+    console.log("handleLogout called");
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setAuthState({
@@ -83,12 +90,23 @@ function App() {
 
   return (
     <AuthContext.Provider value={{ authState, handleLogin, handleLogout }}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+
         <Navbar />
         <div className="container">
-          <Routes>
+        <Routes>
             <Route path='/login' element={ <LoginPage /> }/>
             <Route path='/signup' element={ <SignupPage /> } />
-            <Route path='/dashboard' element={ <DashboardPage /> } />
+            <Route path='/dashboard' element={ 
+              <ProtectedRoute>
+                <DashboardPage /> 
+              </ProtectedRoute>
+            } />
+            <Route path='/dogs' element={
+              <ProtectedRoute>
+                  <DogsPage/>
+                </ProtectedRoute>
+              }/>
             {/* Redirect base path */}
             <Route 
             path='/'
@@ -99,6 +117,7 @@ function App() {
             <Route path="*" element={ <div>404 Not Found</div> }/>
           </Routes>
         </div>
+        </LocalizationProvider>
     </AuthContext.Provider>
   )
 }
