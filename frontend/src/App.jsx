@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate} from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate, useNavigate} from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import api from './services/api'
@@ -14,6 +14,7 @@ import './App.css'
 
 // Create Auth Context
 export const AuthContext = createContext(null);
+// import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   const [ authState, setAuthState] = useState({
@@ -26,6 +27,7 @@ function App() {
   const navigate = useNavigate();
 
   const fetchUser = async () => {
+    console.log("fetchUser called. Token exists:", !!authState.token);
     if(authState.token){
       try {
         const response = await api.get('/users/me/'); // Fetch user details
@@ -42,6 +44,7 @@ function App() {
         handleLogout(); // Use logout function to clear everything
       }
     } else {
+      console.log("No token found, setting auth loading false.");
       setAuthState(prev => ({
         ...prev,
         isAuthLoading:false // No token, stop loading
@@ -67,6 +70,7 @@ function App() {
   }
 
   const handleLogout = () => {
+    console.log("handleLogout called");
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setAuthState({
@@ -90,7 +94,7 @@ function App() {
 
         <Navbar />
         <div className="container">
-          <Routes>
+        <Routes>
             <Route path='/login' element={ <LoginPage /> }/>
             <Route path='/signup' element={ <SignupPage /> } />
             <Route path='/dashboard' element={ 
@@ -102,8 +106,7 @@ function App() {
               <ProtectedRoute>
                   <DogsPage/>
                 </ProtectedRoute>
-              }
-              />
+              }/>
             {/* Redirect base path */}
             <Route 
             path='/'

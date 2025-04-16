@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { useLocation, Navigate } from "react-router-dom";
-import { AuthContext } from "../App";
+import { AuthContext } from '../App'
 
 export default function ProtectedRoute({ isAuthenticated, children }){
     const { authState } = useContext(AuthContext)
