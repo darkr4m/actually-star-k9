@@ -71,3 +71,63 @@ api.interceptors.response.use(
 )
 
 export default api;
+
+export async function startGoogleAuth() {
+    try {
+        const response = await api.get('auth/google/redirect/');
+        const { authorization_url } = response.data
+        window.location.href = authorization_url
+    } catch (error) {
+        console.error('Failed to start Google OAuth:', error);
+        throw error;
+    }
+}
+
+export async function completeGoogleOAuth() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        console.log('Sending to backend:', { code, state });  // Debug
+        if (!code || !state) {
+            throw new Error('Missing code or state in callback URL');
+        }
+
+        const response = await api.post('auth/google/callback/', { code, state }, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        console.log(response.data.message);
+        window.location.href = '/dashboard?google_connected=true';
+    } catch (error) {
+        console.error('Failed to complete Google OAuth:', error);
+        window.location.href = '/dashboard?google_error=true';
+        throw error;
+    }
+}
+
+export async function disconnectGoogle() {
+    try {
+        const response = await api.post('auth/google/disconnect/');
+        console.log(response.data.message);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to disconnect Google:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+export async function fetchGoogleEvents(){
+    const response = await api.get('/api/v1/calendar/events');
+    return response.data.events
+}
+
+export async function getDogs() {
+    try {
+        console.log('Fetching data...')
+        const response = await api.get(API_BASE_URL+'api/v1/dogs/')
+        return response.data;
+    } catch (error) {
+        console.error('getDogs() - API Error', error.response || error.message);
+        throw error;
+    }
+}
