@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext'
 import { useGoogle } from '../../hooks/useGoogle';
 import Button from '@mui/material/Button'
+import { Link } from 'react-router-dom';
 
 export default function DashboardPage() {
     const { authState } = useAuth()
@@ -35,7 +36,7 @@ export default function DashboardPage() {
         <div>
             <h2>Dashboard</h2>
             <p>Welcome, {authState.user?.username}!</p>
-
+            <Link to='/dogs'>Dogs</Link>
             <hr />
 
             <h3>Google Calendar Integration</h3>

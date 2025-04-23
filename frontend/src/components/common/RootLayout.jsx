@@ -17,6 +17,11 @@ export default function RootLayout() {
         <>
             <Navbar />
             <main className="container">
+                { authState.isAuthenticated && (
+                    <>
+                    <p>Sidebar component</p>
+                    </>
+                )}
                 {/* Child routes will render here */}
                 <Outlet />
             </main>
