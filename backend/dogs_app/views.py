@@ -17,7 +17,7 @@ class DogListCreateView(APIView):
     * GET /api/v1/dogs/
     * POST /api/v1/dogs/
     """
-    permission_classes = [permissions.AllowAny] # user must be authenticated (via JWT)
+    permission_classes = [permissions.IsAuthenticated] # user must be authenticated (via JWT)
     authentication_classes = [JWTAuthentication]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
@@ -62,7 +62,7 @@ class DogDetailView(APIView):
     * PATCH  /api/v1/dogs/{pk}/
     * DELETE /api/v1/dogs/{pk}/
     """
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     

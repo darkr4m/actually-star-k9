@@ -5,8 +5,6 @@ import { Button } from "@mui/material";
 
 import useDogs from '../../hooks/useDogs'
 
-import { getDogs } from "../../services/dogsService";
-
 export default function DogsListPage() {
 
     const { dogs, isLoading, error, fetchDogs } = useDogs()
@@ -52,7 +50,7 @@ export default function DogsListPage() {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems:'center' }}>
             <h2>All Dogs</h2>
-            <Button variant="contained" sx={{my:1}}>Add new dog</Button>
+            <Button variant="contained" sx={{my:1}} component={Link} to='/dogs/add' >Add new dog</Button>
 
             <ul>
                 {dogs.map((dog, index)=>{

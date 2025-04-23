@@ -13,7 +13,7 @@ import { getDogById } from "../services/dogsService";
 * }} An object containing the dog data, loading state, error state, and a fetch function.
 */
 
-export default function useDogDetail(dogId) {
+export default function useDogDetail(id) {
     // State for the dog data itself
     const [dog, setDog] = useState(null)
     // State to track if data is currently being loaded
@@ -46,18 +46,18 @@ export default function useDogDetail(dogId) {
     }, [])
 
     useEffect(()=>{
-        console.log(`useDogDetail useEffect: Checking dogId: ${dogId}`); // Log ID check
-        if (dogId !== null && dogId !== undefined) {
-            console.log(`useDogDetail useEffect: Valid dogId (${dogId}) found, calling fetchDogDetail.`);
-            fetchDogDetail(dogId); // Call fetch only if dogId is valid
+        console.log(`useDogDetail useEffect: Checking dogId: ${id}`); // Log ID check
+        if (id !== null && id !== undefined) {
+            console.log(`useDogDetail useEffect: Valid id (${id}) found, calling fetchDogDetail.`);
+            fetchDogDetail(id); // Call fetch only if id is valid
         } else {
-            // If dogId is not valid (e.g., on '/dogs/add'), reset the state.
-            console.log(`useDogDetail useEffect: Invalid dogId (${dogId}), resetting state and skipping fetch.`);
+            // If id is not valid (e.g., on '/dogs/add'), reset the state.
+            console.log(`useDogDetail useEffect: Invalid id (${id}), resetting state and skipping fetch.`);
             setDog(null);
             setError(null);
             setIsLoading(false);
         }
-    }, [dogId, fetchDogDetail])
+    }, [id, fetchDogDetail])
 
     return {
         dog,

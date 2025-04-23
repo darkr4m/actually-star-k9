@@ -113,7 +113,7 @@ export default function DogFormPage(){
                 {isEditMode ? `Edit Dog: ${initialData?.name || ''}` : 'Add New Dog'}
             </Typography>
             {/* Form Element */}
-            <Box component='form' onSubmit={handleSubmit} noValidate sx={{width:'80vw'}}>
+            <Box component='form' onSubmit={handleSubmit} noValidate sx={{width:'70vw'}}>
                 <Grid container columns={{xs: 2, md:4}} rowSpacing={1} columnSpacing={{xs:1, sm:2, md:3}}>
                     <Grid size={4}>
                         <FormSectionDivider>Basic Information</FormSectionDivider>
@@ -127,7 +127,7 @@ export default function DogFormPage(){
                                 overflow: "hidden", // Ensures image doesn't spill out if styles fail
                             }}>
                             <img
-                                src={initialData.photo || PLACEHOLDER_IMAGE}
+                                src={initialData?.photo || PLACEHOLDER_IMAGE}
                                 alt="Preview of the selected photo" // Provide a meaningful description
                                 style={{
                                     display: 'block', // Removes extra space below inline images
@@ -292,7 +292,7 @@ export default function DogFormPage(){
                         <FormSectionDivider>Medical Information</FormSectionDivider>
                     </Grid>
                     <Grid size={2} rows={2}>
-                        <Grid size={{md: 4}}>
+                        <Grid size={{md:4}}>
                         <FormTextField
                                 name="veterinarian_name"
                                 label="Veterinarian Name"
@@ -303,7 +303,7 @@ export default function DogFormPage(){
                                 disabled={isSubmitting}
                                 />
                         </Grid>
-                        <Grid size={{md: 4}}>
+                        <Grid size={{md:4}}>
                         <FormTextField
                                 name="veterinarian_phone"
                                 label="Veterinarian Phone Number"
