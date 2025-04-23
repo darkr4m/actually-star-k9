@@ -25,6 +25,7 @@ class DogListSerializer(serializers.ModelSerializer):
     """
     age_display = serializers.ReadOnlyField()
     short_description = serializers.ReadOnlyField()
+    photo_url = serializers.ImageField(source='photo', read_only=True, use_url=True)
 
     class Meta:
         model = Dog
@@ -33,14 +34,10 @@ class DogListSerializer(serializers.ModelSerializer):
             'name',
             'breed',
             'sex',
+            'owner',
             'age_display',
             'short_description',
             'status',
-            'photo', # Include photo URL for potential thumbnails
+            'photo_url', # Include photo URL for potential thumbnails
             'is_altered',
         )
-        read_only_fields = (
-            'id',
-            'created_at',
-            'updated_at'
-        )  

@@ -8,6 +8,9 @@ import DashboardPage from "./pages/common/Dashboard";
 import GoogleCallbackPage from "./pages/common/googleCallbackPage";
 
 import HomePage from "./components/Home";
+import DogsListPage from "./pages/dogs/DogsListPage";
+import DogDetailPage from './pages/dogs/DogDetailPage';
+import DogFormPage from "./pages/dogs/DogFormPage";
 
 const router = createBrowserRouter([
     {
@@ -31,6 +34,7 @@ const router = createBrowserRouter([
                         path: '/google-callback', // Matches '/signup'
                         element: <GoogleCallbackPage />
                     },
+                    // Protected routes accessible to only authenticated users
                     {
                         path: '/dashboard', 
                         element: (
@@ -39,7 +43,18 @@ const router = createBrowserRouter([
                             </ProtectedRoute>
                         )
                     },
-                    
+                    {
+                        path: '/dogs', 
+                        element: (
+                            <ProtectedRoute>
+                                <DogsListPage/>
+                            </ProtectedRoute>
+                        )  
+                    },
+                    { path: '/dogs/add', element: <DogFormPage />},
+                    { path: '/dogs/:id', element: <DogDetailPage />},
+                    { path: '/dogs/:id/edit', element: <DogFormPage />},
+ 
                 ]
             }
         ]
