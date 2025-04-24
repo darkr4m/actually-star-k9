@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core import validators as v
+from phonenumber_field.modelfields import PhoneNumberField
 from common_app.validators import validate_name
 
 class Client(models.Model):
@@ -9,9 +10,7 @@ class Client(models.Model):
         verbose_name=_("First Name"),
         max_length=100,
         validators=[
-            v.MinLengthValidator(
-                2, message=_("First name must be at least 2 characters long.")
-            ),
+            v.MinLengthValidator(2, message=_("First name must be at least 2 characters long.")),
             v.MaxLengthValidator(100, message=_("First name cannot exceed 100 characters.")),
             validate_name,
         ],
@@ -21,9 +20,7 @@ class Client(models.Model):
         verbose_name=_("Last Name"),
         max_length=100,
         validators=[
-            v.MinLengthValidator(
-                2, message=_("Last name must be at least 2 characters long.")
-            ),
+            v.MinLengthValidator(2, message=_("Last name must be at least 2 characters long.")),
             v.MaxLengthValidator(100, message=_("Last name cannot exceed 100 characters.")),
             validate_name,
         ],
@@ -32,13 +29,17 @@ class Client(models.Model):
     email = models.EmailField(
         verbose_name=_("Email Address"),
         unique=True,
+        help_text=_("Enter a unique email address for the client."),
+        error_messages={
+            'unique': _("A client with this email address already exists."),
+        }
     )
-    phone_number = models.CharField(
+    phone_number = PhoneNumberField(
         verbose_name=_("Phone Number"),
         max_length=25,
         blank=True,
         null=True,
-        help_text=_("Enter the client's phone number (Max 20 characters).")
+        help_text=_("Enter the client's phone number (Max 25 characters). Accepts various international formats.")
     )
     address = models.CharField(
         verbose_name=_("Address"),
@@ -51,14 +52,14 @@ class Client(models.Model):
         max_length=100,
         blank=True,
         null=True,
-        help_text=_("Enter the name of the client's emergency contact."),
+        help_text=_("Enter the name of the client's emergency contact (optional)."),
     )
-    emergency_contact_phone = models.CharField(
+    emergency_contact_phone = PhoneNumberField(
         verbose_name=_("Emergency Contact Phone Number"),
         max_length=25,
         blank=True,
         null=True,
-        help_text=_("Enter the phone number of the client's emergency contact."),
+        help_text=_("Enter the phone number of the client's emergency contact (optional). Accepts various international formats."),
     )
     is_active = models.BooleanField(
         default=True,
