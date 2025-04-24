@@ -29,6 +29,7 @@ class ClientSerializer(serializers.ModelSerializer):
             'last_name',
             'get_full_name',
             'email',
+            'phone_number',
             'emergency_contact_name',
             'emergency_contact_phone',
             'is_active',

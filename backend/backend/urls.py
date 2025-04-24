@@ -24,7 +24,8 @@ urlpatterns = [
     path('users/', include('users_app.urls')),
     path('auth/', include('auth_app.urls')),
     path('api/v1/calendar/', include('calendar_app.urls')),
-    path('api/v1/dogs/', include('dogs_app.urls'))
+    path('api/v1/dogs/', include('dogs_app.urls')),
+    path('api/v1/clients/', include('clients_app.urls'))
 
 ]
 
