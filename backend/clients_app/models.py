@@ -31,11 +31,11 @@ class Client(models.Model):
     )
     email = models.EmailField(
         verbose_name=_("Email Address"),
-        unique=True
-    ),
+        unique=True,
+    )
     phone_number = models.CharField(
         verbose_name=_("Phone Number"),
-        max_length=20,
+        max_length=25,
         blank=True,
         null=True,
         help_text=_("Enter the client's phone number (Max 20 characters).")
@@ -55,10 +55,15 @@ class Client(models.Model):
     )
     emergency_contact_phone = models.CharField(
         verbose_name=_("Emergency Contact Phone Number"),
-        max_length=20,
+        max_length=25,
         blank=True,
         null=True,
         help_text=_("Enter the phone number of the client's emergency contact."),
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name=_("Active Status"),
+        help_text=_("Designates whether this client profile is considered active. Unselect this instead of deleting profiles to archive.")
     )
     # --- Timestamps ---
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created At"))
@@ -67,9 +72,13 @@ class Client(models.Model):
     class Meta:
         verbose_name = _('Client')
         verbose_name_plural = _('Clients')
-        ordering = ['last_name', 'first_name']
+        ordering = ['last_name', 'first_name'] # Default sort order
 
     @property
     def get_full_name(self):
         """Returns a human-readable string of the client's full name."""
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name}".strip()
+    
+    def __str__(self):
+        """String representation for the Client model, used in admin and elsewhere."""
+        return self.get_full_name
