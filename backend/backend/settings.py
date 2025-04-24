@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'auth_app',
     'users_app',
     'calendar_app',
-    'dogs_app'
+    'dogs_app',
+    'clients_app'
 ]
 
 MIDDLEWARE = [
