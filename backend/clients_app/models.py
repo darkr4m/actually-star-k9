@@ -29,6 +29,9 @@ class Client(models.Model):
         ],
         help_text=_("Enter the last name of the client (2-100 characters)."),
     )
+    email = models.EmailField(
+        verbose_name=_("Email Address"),
+    ),
     phone_number = models.CharField(
         verbose_name=_("Phone Number"),
         max_length=20,
