@@ -31,6 +31,7 @@ class Client(models.Model):
     )
     email = models.EmailField(
         verbose_name=_("Email Address"),
+        unique=True
     ),
     phone_number = models.CharField(
         verbose_name=_("Phone Number"),
