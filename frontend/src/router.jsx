@@ -11,6 +11,7 @@ import HomePage from "./components/Home";
 import DogsListPage from "./pages/dogs/DogsListPage";
 import DogDetailPage from './pages/dogs/DogDetailPage';
 import DogFormPage from "./pages/dogs/DogFormPage";
+import ClientsListPage from "./pages/clients/ClientsListPage";
 
 const router = createBrowserRouter([
     {
@@ -54,6 +55,8 @@ const router = createBrowserRouter([
                     { path: '/dogs/add', element: <DogFormPage />},
                     { path: '/dogs/:id', element: <DogDetailPage />},
                     { path: '/dogs/:id/edit', element: <DogFormPage />},
+                    
+                    { path: '/clients', element:<ClientsListPage /> }
  
                 ]
             }
