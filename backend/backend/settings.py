@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'auth_app',
+    'common_app',
     'users_app',
     'calendar_app',
     'dogs_app',

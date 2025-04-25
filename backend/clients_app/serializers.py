@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from phonenumber_field.serializerfields import PhoneNumberField # Import for phone numbers
+from common_app.serializers import AddressSerializer
 from .models import Client
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -11,7 +12,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
     # TODO:
     # Option 1: Nested Serializer (Read-Only) - Shows full address details
-    # addresses = AddressSerializer(many=True, read_only=True)
+    addresses = AddressSerializer(many=True, read_only=True)
 
     # Option 3: StringRelatedField (Read-Only __str__) - Shows address __str__ representation
     # addresses = serializers.StringRelatedField(many=True, read_only=True)
@@ -33,7 +34,7 @@ class ClientSerializer(serializers.ModelSerializer):
             'emergency_contact_name',
             'emergency_contact_phone',
             'is_active',
-            # 'addresses',
+            'addresses',
             'created_at',
             'updated_at'
         ]

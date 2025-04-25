@@ -22,7 +22,7 @@ class Address(models.Model):
         Client,
         on_delete=models.CASCADE,
         related_name="addresses",
-        verbose_name=_(Client)
+        verbose_name=_("Client")
     )
 
     street_address_1 = models.CharField(
@@ -97,4 +97,4 @@ class Address(models.Model):
         # Get client name
         client_name = str(self.client) if self.client else _("Unknown client")
         # Display the address type using the human-readable choice value
-        return f"{self,client_name} - {self.get_address_type_display()}: {self.addr_line}"
+        return f"{client_name} - {self.get_address_type_display()}: {addr_line}"

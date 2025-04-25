@@ -1,6 +1,14 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from .models import Client
+from common_app.models import Address
+
+class AddressInline(admin.StackedInline):
+    model = Address
+    fields = ('client', 'address_type', 'street_address_1', 'street_address_2', 'city', 'state', 'country', 'postal_code')
+    extra = 1 # Number of empty forms to display by default
+    verbose_name = _("Address")
+    verbose_name_plural = _("Addresses")
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -38,12 +46,16 @@ class ClientAdmin(admin.ModelAdmin):
             'fields': ('emergency_contact_name', 'emergency_contact_phone'),
         }),
         (_('Status & Metadata'), {
+            'classes': ('collapse',), # Make this section collapsible
             'fields': ('is_active', 'created_at', 'updated_at'),
         }),
     )
 
     # Make timestamp fields read-only in the admin
     readonly_fields = ('created_at', 'updated_at')
+
+    # Include the Address inline editing form on the Client page
+    inlines = [AddressInline]
 
     # --- Actions ---
     actions = ['make_active', 'make_inactive']
