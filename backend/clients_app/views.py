@@ -17,7 +17,7 @@ class ClientListCreateView(APIView):
     * GET /api/v1/clients/
     * POST /api/v1/clients/
     """
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     parser_classes = [FormParser, JSONParser]
 
@@ -29,6 +29,7 @@ class ClientListCreateView(APIView):
         """
         clients = Client.objects.all().order_by('last_name')
         clients_ser = ClientSerializer(clients, many=True, context={'request': request})
+        # logger.info(clients_ser.data)
         return Response(clients_ser.data, status=status.HTTP_200_OK)
     
     def post(self, request):
@@ -53,3 +54,65 @@ class ClientListCreateView(APIView):
             logger.error(f"--- ClientListCreateView POST: Serializer Errors ---")
             logger.error(client_ser.errors)
             return Response(client_ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class ClientDetailView(APIView):
+    """
+    API View to retrieve, update or delete a specific client (dog owner) instance.
+    Handles GET (retrieve), PUT (update), PATCH (partial update), DELETE.
+    Uses JWT Authentication.
+    URL expects a primary key (pk) for the client.
+    * GET    /api/v1/clients/{pk}/
+    * PATCH  /api/v1/clients/{pk}/
+    * DELETE /api/v1/clients/{pk}/
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_object(self, pk):
+        """
+        Helper method to get the Client object or raise Http404 if not found.
+        """
+        return get_object_or_404(Client, pk=pk)
+    
+    def get(self, request, pk):
+        """
+        Retrieve details of a single client identified by pk.
+        Uses the ClientSerializer for detailed output.
+        GET    /api/v1/clients/{pk}/
+        """
+        client = self.get_object(pk)
+        client_ser = ClientSerializer(client, context={'request': request})
+        return Response(client_ser.data)
+    
+    def patch(self, request, pk):
+        """
+        Partially update a client instance.
+        Only updates the fields provided in the request body.
+        PATCH  /api/v1/clients/{pk}/
+        """
+        client = self.get_object(pk)
+        # Use partial=True to allow partial updates
+        client_ser = ClientSerializer(client, data=request.data, partial=True, context={'request': request})
+        if client_ser.is_valid():
+            client_ser.save()
+            return Response(client_ser.data)
+        else:
+            logger.error(f"Client update (PATCH) failed for pk={pk}: {client_ser.errors}")
+            return Response(client_ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, pk):
+        """
+        Delete a client instance identified by pk.
+        DELETE /api/v1/clients/{pk}/
+        """
+        client = self.get_object(pk)
+        try:
+            client.delete()
+            logger.info(f"Client pk={pk} deleted successfully.")
+            # Return 204 No Content on successful deletion
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            # Catch potential deletion errors (e.g., protected by foreign key)
+             logger.error(f"Error deleting client pk={pk}: {e}")
+             return Response({"detail": "Error deleting client."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
