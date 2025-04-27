@@ -36,7 +36,7 @@ export default function DashboardPage() {
         <div>
             <h2>Dashboard</h2>
             <p>Welcome, {authState.user?.username}!</p>
-            <Link to='/dogs'>Dogs</Link>
+            <Link to='/dogs'>Dogs</Link> <Link to='/clients'>Clients</Link>
             <hr />
 
             <h3>Google Calendar Integration</h3>
