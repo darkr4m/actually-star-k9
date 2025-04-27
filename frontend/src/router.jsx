@@ -7,10 +7,12 @@ import SignupPage from "./pages/common/SignupPage";
 import DashboardPage from "./pages/common/Dashboard";
 import GoogleCallbackPage from "./pages/common/googleCallbackPage";
 
-import HomePage from "./components/Home";
 import DogsListPage from "./pages/dogs/DogsListPage";
 import DogDetailPage from './pages/dogs/DogDetailPage';
 import DogFormPage from "./pages/dogs/DogFormPage";
+import ClientsListPage from "./pages/clients/ClientsListPage";
+import ClientFormPage from "./pages/clients/ClientFormPage";
+import ClientDetailPage from "./pages/clients/ClientDetailPage";
 
 const router = createBrowserRouter([
     {
@@ -54,6 +56,11 @@ const router = createBrowserRouter([
                     { path: '/dogs/add', element: <DogFormPage />},
                     { path: '/dogs/:id', element: <DogDetailPage />},
                     { path: '/dogs/:id/edit', element: <DogFormPage />},
+                    
+                    { path: '/clients', element:<ClientsListPage /> },
+                    { path: '/clients/add', element:<ClientFormPage /> },
+                    { path: '/clients/:id', element:<ClientDetailPage /> },
+                    { path: '/clients/:id/edit', element:<ClientFormPage /> },
  
                 ]
             }
