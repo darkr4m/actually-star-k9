@@ -17,12 +17,13 @@ export default function useDogForm(initialData, dogId, isEditMode){
     const navigate = useNavigate()
     const { fetchDogs } = useDogs(false)
 
+    // --- Initial Form State ---
     const DOG_DATA_FORM = { 
         name: '', 
         breed: '', 
         date_of_birth: null, 
         sex: 'UNKNOWN', 
-        owner: 'system',
+        owner: null,
         is_altered: null, 
         color_markings: '', 
         weight_kg: '', 
@@ -57,7 +58,7 @@ export default function useDogForm(initialData, dogId, isEditMode){
                 breed: initialData.breed || '',
                 date_of_birth: initialData.date_of_birth ? dayjs(initialData.date_of_birth) : null,
                 sex: initialData.sex || 'UNKNOWN',
-                owner:'system',
+                owner: initialData.owner_details.id || null,
                 is_altered: initialData.is_altered,
                 color_markings: initialData.color_markings || '',
                 weight_kg: initialData.weight_kg || '',
@@ -79,13 +80,16 @@ export default function useDogForm(initialData, dogId, isEditMode){
             setPhotoFile(null);
             setIsSubmitting(false);
             setFieldErrors({});
-            setGeneralError('');
-            setSuccessMessage('');
+            clearMessages()
         } else if (!isEditMode) {
             // Reset form for add mode if initialData somehow existed
             setFormData(DOG_DATA_FORM);
             setPhotoPreview(PLACEHOLDER_IMAGE);
             setPhotoFile(null);
+            // Reset other state only if needed (e.g., navigating from edit to add)
+            setIsSubmitting(false);
+            setFieldErrors({});
+            clearMessages()
         }
     }, [isEditMode, initialData])
 
@@ -136,6 +140,16 @@ export default function useDogForm(initialData, dogId, isEditMode){
         clearMessages()
     }, [ fieldErrors, clearMessages ])
 
+    const handleOwnerChange = useCallback((ownerId)=>{
+        setFormData(prev => ({...prev, owner:ownerId}));
+        if(fieldErrors.owner){
+            setFieldErrors(prev => {
+                const newErrors = { ...prev }; delete newErrors.owner; return newErrors;
+            });
+        }
+        clearMessages();
+    }, [fieldErrors, clearMessages] )
+
     const handlePhotoChange = useCallback((e) => {
         const file = e.target.files[0];
         if (file) {
@@ -149,7 +163,7 @@ export default function useDogForm(initialData, dogId, isEditMode){
                 });
             }
         } else {
-            setPhotoFile(null);
+            setPhotoFile(null); // Reset if file selection is cancelled
             setPhotoPreview(initialData?.photo || PLACEHOLDER_IMAGE); // Use initialData from closure
         }
         clearMessages();
@@ -160,8 +174,7 @@ export default function useDogForm(initialData, dogId, isEditMode){
         if (e) e.preventDefault(); // Prevent default form submission if event is passed
         setIsSubmitting(true);
         setFieldErrors({});
-        setGeneralError('');
-        setSuccessMessage('');
+        clearMessages();
 
         const dataToSend = new FormData();
         const dateFieldKeys = ['date_of_birth', 'vaccination_rabies', 'vaccination_dhpp', 'vaccination_bordetella', 'parasites'];
@@ -205,30 +218,40 @@ export default function useDogForm(initialData, dogId, isEditMode){
 
         } catch (error) {
             console.error(`useDogForm Hook: Failed to ${isEditMode ? 'update' : 'add'} dog:`, error);
-             if (error.response?.data && error.response?.status === 400) {
+            if (error.response?.data && typeof error.response.data === 'object') {
                 const backendErrors = error.response.data;
                 const formattedErrors = {};
                 let nonFieldError = '';
+
+                // Iterate over backend error keys
                 for (const key in backendErrors) {
-                     if (Array.isArray(backendErrors[key])) {
-                        const message = backendErrors[key].join(' ');
-                        if (key === 'non_field_errors') nonFieldError = message; else formattedErrors[key] = message;
-                    } else if (typeof backendErrors[key] === 'string') {
-                         if (key === 'non_field_errors' || key === 'detail') nonFieldError = backendErrors[key]; else formattedErrors[key] = backendErrors[key];
+                    if (Object.prototype.hasOwnProperty.call(backendErrors, key)) {
+                        const errorValue = backendErrors[key];
+                        // Join array messages, handle strings directly
+                        const message = Array.isArray(errorValue) ? errorValue.join(' ') : String(errorValue);
+
+                        if (key === 'non_field_errors' || key === 'detail') {
+                            nonFieldError = message; // Assign to general error
+                        } else {
+                            formattedErrors[key] = message; // Assign to specific field
+                        }
                     }
                 }
                 setFieldErrors(formattedErrors);
                 setGeneralError(nonFieldError || 'Please check the form for errors.');
+
             } else if (error.response) {
-                setGeneralError(`Server error: ${error.response.status} ${error.response.statusText || ''}.`);
+                // Handle non-object errors from response (e.g., plain text, HTML)
+                setGeneralError(`Server error: ${error.response.status} ${error.response.statusText || ''}. Please try again.`);
             } else if (error.request) {
-                setGeneralError('Network error. Please check connection.');
+                // Handle network errors (no response received)
+                setGeneralError('Network error. Could not reach the server. Please check your connection.');
             } else {
-                setGeneralError(`Unexpected error: ${error.message}`);
+                // Handle other unexpected errors (e.g., JS errors during request setup)
+                setGeneralError(`An unexpected error occurred: ${error.message}`);
             }
-             setIsSubmitting(false); // Reset submitting state only on error
-        }
-        // Don't reset isSubmitting in a finally block here because of the timeout/navigation on success
+            setIsSubmitting(false); // Ensure submit button is re-enabled on error
+       }
     }, [
         formData, photoFile, isEditMode, dogId, // Dependencies for logic inside handleSubmit
         navigate, fetchDogs, clearMessages // Stable functions/dependencies
@@ -246,6 +269,7 @@ export default function useDogForm(initialData, dogId, isEditMode){
             handleSelectChange,
             handleDateChange,
             handlePhotoChange,
+            handleOwnerChange,
             handleSubmit,
             PLACEHOLDER_IMAGE
         };

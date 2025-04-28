@@ -19,6 +19,7 @@ import FormTextField from "../../components/common/forms/FormTextField";
 import FormDatePicker from "../../components/common/forms/FormDatePicker";
 import PhotoUploadField from "../../components/common/forms/PhotoUploadField";
 import FormSelectField from '../../components/common/forms/FormSelectField'
+import ClientSelect from "../../components/clients/ClientSelect";
 
 
 /**
@@ -32,7 +33,6 @@ export default function DogFormPage(){
     const { id } = useParams() // Get ID from URL if present
     const navigate = useNavigate()
     const isEditMode = Boolean(id); // Determine if we are editing
-    const mode = isEditMode ? 'edit' : 'add'; // Set mode
 
     // --- Data Fetching (Edit Mode Only) ---
     // Fetch dog details required for editing. Pass null if adding.
@@ -52,6 +52,7 @@ export default function DogFormPage(){
         handleSelectChange, // Handler for select input changes
         handleDateChange,   // Handler for date picker changes
         handlePhotoChange,  // Handler for photo file input changes
+        handleOwnerChange,  // Get the owner change handler
         handleSubmit,       // Handler for form submission
         PLACEHOLDER_IMAGE   // Constant for placeholder image URL
     } = useDogForm(initialData, id, isEditMode); // Pass fetched initialData to the hook
@@ -245,6 +246,16 @@ export default function DogFormPage(){
                                 <MenuItem value={'WAITLIST'}>Waitlist</MenuItem>
                                 <MenuItem value={'INACTIVE'}>Inactive</MenuItem>
                             </FormSelectField>
+                    </Grid>
+                    <Grid size={4}>
+                        {/* ClientSelect Component */}
+                        <ClientSelect
+                            value={formData.owner} // Pass the owner ID
+                            onChange={handleOwnerChange} // Pass the specific handler
+                            error={!!fieldErrors.owner} // Boolean error state
+                            helperText={fieldErrors.owner || "Select the dog's owner."}
+                            disabled={isSubmitting}
+                        />
                     </Grid>
                     <Grid size={4}>
                         <FormSectionDivider>Training Details</FormSectionDivider>

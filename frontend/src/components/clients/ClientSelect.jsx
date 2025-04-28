@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import CircularProgress from '@mui/material/CircularProgress';
 import useClients from "../../hooks/useClients"
 
 export default function ClientSelect({
@@ -29,6 +28,7 @@ export default function ClientSelect({
         if (value === null || value === undefined) {
             return null;
         }
+
         return clientOptions.find(option => option.id === value) || null;
     }, [value, clientOptions]); // Recalculate when value or options change
 
@@ -45,13 +45,14 @@ export default function ClientSelect({
         <>
         <Autocomplete
             disablePortal
-            disableClearable
+            disableClearable={required}
             options={clientOptions}
-            sx={{ width: 300 }}
             value={selectedOption}
             isOptionEqualToValue={(option, val) => option.id === val?.id} // Crucial: Compare options based on ID
             getOptionLabel={(option) => option.label || ''} // Tell Autocomplete how to display each option object
             onChange={handleChange}
+            fullWidth
+            sx={{my:1}}
             renderInput={(params) => <TextField 
                 {...params} 
                 label={label}

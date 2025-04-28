@@ -129,7 +129,7 @@ export default function DogDetailPage(){
                         <Grid size={4}>
                             <Divider textAlign='left' ><Typography variant='overline'>Owner Information</Typography></Divider>
                             <Typography variant='h6'>Owner Name</Typography>
-                            {dog.owner}
+                            {dog.owner_details.get_full_name}
                         </Grid>
 
                         { (dog.behavioral_notes || dog.training_goals || dog.previous_training) && (     
@@ -195,6 +195,7 @@ export default function DogDetailPage(){
                             variant="contained"
                             color="primary"
                             component={Link}
+                            startIcon={<EditIcon />}
                             to={`/dogs/${id}/edit`}
                         >
                             Edit
