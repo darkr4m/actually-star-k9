@@ -17,7 +17,7 @@ class ClientListCreateView(APIView):
     * GET /api/v1/clients/
     * POST /api/v1/clients/
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     authentication_classes = [JWTAuthentication]
     parser_classes = [FormParser, JSONParser]
 

@@ -62,6 +62,7 @@ class Dog(models.Model):
     date_of_birth = models.DateField(
         verbose_name=_("Approximate Date of Birth"),
         blank=True,
+        null=True,
         help_text=_(
             "Enter the dog's approximate date of birth. Leave blank if unknown."
         ),
@@ -215,8 +216,6 @@ class Dog(models.Model):
             return None
         today = timezone.now().date()
         # Ensure dob is a date object
-        if isinstance(dob, datetime.datetime):
-             dob = dob.date()
         try:
             dob = self.date_of_birth
             days = (today - dob).days
