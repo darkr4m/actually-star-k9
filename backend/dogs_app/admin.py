@@ -5,6 +5,7 @@ import datetime
 from django.utils.translation import gettext_lazy as _
 
 from .models import Dog
+from clients_app.models import Client
 
 @admin.register(Dog)
 class DogAdmin(admin.ModelAdmin):
@@ -16,6 +17,7 @@ class DogAdmin(admin.ModelAdmin):
     # --- List View Configuration ---
     list_display = (
         'name',
+        'owner_link',
         # 'display_owner', # Use custom method for owner display
         'breed',
         'age_display_in_list',
@@ -30,6 +32,9 @@ class DogAdmin(admin.ModelAdmin):
         'sex',
         'is_altered',
     )
+    search_fields = ('name', 'breed', 'owner__first_name', 'owner__last_name', 'owner__email') # Search by owner fields
+    autocomplete_fields = ['owner'] # Use autocomplete for owner selection (more scalable)
+    ordering = ('name',)
 
     fieldsets = (
         # Section 1: Basic Information
@@ -60,13 +65,13 @@ class DogAdmin(admin.ModelAdmin):
         # Section 3: Medical Information
         (_('Medical Information'), {
             'fields': (
+                'veterinarian_name',
+                'veterinarian_phone',
+                'medical_notes',
                 'vaccination_rabies',
                 'vaccination_dhpp',
                 'vaccination_bordetella',
                 'parasites',
-                'veterinarian_name',
-                'veterinarian_phone',
-                'medical_notes',
             )
         }),
         # Section 4: Status & System Info
@@ -90,14 +95,18 @@ class DogAdmin(admin.ModelAdmin):
         # Add other calculated/display fields here
     )
 
-    # --- Custom Methods for Display ---
-    # def display_owner(self, obj):
-    #     """Displays owner's full name or username."""
-    #     if obj.owner:
-    #         return obj.owner.get_full_name() or obj.owner.username
-    #     return _("No Owner Assigned")
-    # display_owner.short_description = _('Owner')
-    # display_owner.admin_order_field = 'owner' # Allow sorting by owner
+        # Display owner as a link to the client admin page
+    def owner_link(self, obj):
+        from django.urls import reverse
+        from django.utils.html import format_html
+        if obj.owner:
+            link = reverse("admin:clients_app_client_change", args=[obj.owner.id])
+            # Display owner name, indicate if deleted
+            owner_str = str(obj.owner) # Uses the Client __str__ method which includes status
+            return format_html('<a href="{}">{}</a>', link, owner_str)
+        return _("No Owner Assigned")
+    owner_link.short_description = _("Owner")
+    owner_link.admin_order_field = 'owner' # Allow sorting by owner
 
     def age_display(self, obj):
         """Displays the calculated age from the model property."""
@@ -137,9 +146,19 @@ class DogAdmin(admin.ModelAdmin):
     def display_photo_thumbnail(self, obj):
         """Displays a smaller thumbnail in the list view."""
         if obj.photo:
-            return format_html('<img src="{}" style="width: 45px; height: auto;" />', obj.photo.url)
+            return format_html('<img src="{}" style="width: 45px; height: 45px; border-radius: 50%;" />', obj.photo.url)
         return "" # Return empty string if no photo
     display_photo_thumbnail.short_description = _('Photo')
+
+
+    # Ensure owner dropdown only shows active, non-deleted clients
+    # The limit_choices_to on the model's ForeignKey helps, but this reinforces it
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Ensure the owner field queryset only contains active clients
+        # This uses the default manager 'objects' which excludes deleted clients
+        form.base_fields['owner'].queryset = Client.objects.all()
+        return form
 
 
     # --- QuerySet Optimization ---
