@@ -1,10 +1,12 @@
 from django.db import models
 from django.core import validators as v
+from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 import datetime
 from .validators import validate_name
+from clients_app.models import Client
 
 
 class Dog(models.Model):
@@ -35,7 +37,19 @@ class Dog(models.Model):
         ],
         help_text=_("Enter the full name of the dog (2-100 characters)."),
     )
-    owner = models.CharField()  # TODO
+
+    owner = models.ForeignKey(
+        Client, 
+        on_delete=models.PROTECT, # Protects against deleting a Client with Dogs
+        related_name="dogs",
+        verbose_name=_("Owner"),
+        null=True, # Allow dog records without an owner temporarily or if owner is hard-deleted
+        blank=True, # Allow owner to be blank in forms
+        help_text=_("Select the client who owns this dog. Only active clients are shown by default.")
+        )
+    
+    # IMPROVEMENT: Consider a ForeignKey to a Breed model for consistency,
+    # or use a library for breed lists. CharField is simple for now.
     breed = models.CharField(
         verbose_name=_("Breed"),
         max_length=100,
@@ -48,7 +62,6 @@ class Dog(models.Model):
     date_of_birth = models.DateField(
         verbose_name=_("Approximate Date of Birth"),
         blank=True,
-        null=True,
         help_text=_(
             "Enter the dog's approximate date of birth. Leave blank if unknown."
         ),
@@ -58,7 +71,6 @@ class Dog(models.Model):
         max_length=7,
         choices=SexChoices.choices,
         blank=True,
-        null=True,
         default=SexChoices.UNKNOWN,
         help_text=_("Select the dog's sex."),
     )
@@ -84,10 +96,18 @@ class Dog(models.Model):
         decimal_places=2,
         blank=True,
         null=True,
-        validators=[v.MinValueValidator(0.1)],
+        validators=[v.MinValueValidator(0.1, message=_("Weight must be a positive value."))],
         help_text=_("Enter the dog's approximate weight in kilograms."),
     )
-    skills = models.CharField()  # TODO:
+    
+    # TODO:
+    # IMPROVEMENT: Changed skills from CharField to TextField for more space.
+    # Consider a ManyToManyField to a Skill model for structured skill tracking.
+    skills = models.CharField(
+        verbose_name=_("Known Skills / Commands"),
+        blank=True,
+        help_text=_("List any known commands or skills the dog possesses (Sit, Stay, Fetch)."),
+    )  
     status = models.CharField(
         verbose_name=_("Status"),
         max_length=20,
@@ -128,25 +148,25 @@ class Dog(models.Model):
     )
     # --- Medical Information
     vaccination_rabies = models.DateField(
-        verbose_name=_("Rabies Vaccination"),
+        verbose_name=_("Rabies Vaccination Date"),
         blank=True,
         null=True,
         help_text=_("Enter the date of the last known Rabies vaccination."),
     )
     vaccination_dhpp = models.DateField(
-        verbose_name=_("DHPP Vaccination"),
+        verbose_name=_("DHPP Vaccination Date"),
         blank=True,
         null=True,
         help_text=_("Enter the date of the last known DHPP vaccination."),
     )
     vaccination_bordetella = models.DateField(
-        verbose_name=_("Bordetella Vaccination"),
+        verbose_name=_("Bordetella Vaccination Date"),
         blank=True,
         null=True,
         help_text=_("Enter the date of the last known Bordetella vaccination."),
     )
     parasites = models.DateField(
-        verbose_name=_("Parasite Testing"),
+        verbose_name=_("Parasite Screening Date"),
         blank=True,
         null=True,
         help_text=_("Enter the date of the last known parasite screening."),
@@ -159,12 +179,11 @@ class Dog(models.Model):
         validators=[v.MinLengthValidator(2), v.MaxLengthValidator(100), validate_name],
         help_text=_("Please enter the name of the dog's primary veterinarian/clinic."),
     )
-    veterinarian_phone = models.CharField(
+    veterinarian_phone = PhoneNumberField(
         verbose_name=_("Veterinarian Phone Number"),
-        max_length=20,
+        max_length=25,
         blank=True,
         null=True,
-        validators=[v.MinLengthValidator(10)],
         help_text=_("Please enter the phone number of the dog's primary veterinarian/clinic."),
     )
     medical_notes = models.TextField(
@@ -195,13 +214,14 @@ class Dog(models.Model):
         if not self.date_of_birth:
             return None
         today = timezone.now().date()
+        # Ensure dob is a date object
+        if isinstance(dob, datetime.datetime):
+             dob = dob.date()
         try:
             dob = self.date_of_birth
-            if isinstance(dob, datetime.datetime):
-                dob = dob.date()
             days = (today - dob).days
             return relativedelta(today, dob)
-        except TypeError:
+        except (TypeError, ValueError):
             return None
         
     @property
@@ -213,61 +233,68 @@ class Dog(models.Model):
         
         years = calculated_age.years
         months = calculated_age.months
+        days = calculated_age.days
 
         if years > 0:
-            year_str = f"{years} year{'s' if years > 1 else ''}"
-            month_str = f"{months} month{'s' if months > 1 else ''}" if months > 0 else ""
+            year_str = f"{years} year{'s' if years != 1 else ''}"
+            # Show months only if years > 0 and months > 0
+            month_str = f"{months} month{'s' if months != 1 else ''}" if months > 0 else ""
             return f"{year_str}{', ' + month_str if month_str else ''}"
         elif months > 0:
-            return f"{months} month{'s' if months > 1 else ''}"
+            month_str = f"{months} month{'s' if months != 1 else ''}"
+            # Show days only if months > 0 and days > 0
+            day_str = f"{days} day{'s' if days != 1 else ''}" if days > 0 else ""
+            return f"{month_str}{', ' + day_str if day_str else ''}"
         else:
-            # Calculate days if less than a month old
-            today = timezone.now().date()
-            dob = self.date_of_birth
-            if isinstance(dob, datetime.datetime):
-                dob = dob.date()
-            days = (today - dob).days
-            return f"{days} day{'s' if days != 1 else ''} old"
-        
+            # Handle age in days for puppies under a month
+             return f"{days} day{'s' if days != 1 else ''} old" # Handles 0 days correctly
+    
+    # --- Vaccination Status Methods ---
+    def _is_date_current(self, date_field_value, expiry_duration):
+        """Helper method to check if a date is within the expiry duration."""
+        if not date_field_value:
+            return False # Unknown or never occurred
+        # Ensure we have a date object
+        event_date = date_field_value
+        # if isinstance(event_date, datetime.datetime):
+        #     event_date = event_date.date() # Not needed for DateField
+
+        # Calculate expiry date using relativedelta for accuracy
+        try:
+            expiry_date = event_date + expiry_duration
+            return timezone.now().date() <= expiry_date
+        except (TypeError, ValueError):
+            return False # Error during calculation
+
+
     def is_rabies_vaccine_current(self, expiry_years=1):
         """Checks if the rabies vaccine is current (assumes 1 or 3 year validity)."""
-        if not self.vaccination_rabies:
-            return False # Unknown or never vaccinated
-        vax_date = self.vaccination_rabies
-        if isinstance(vax_date,datetime.datetime):
-            vax_date.date()
-        expiry_date = vax_date + datetime.timedelta(days=expiry_years * 365)
-        return timezone.now().date() <= expiry_date
+        expiry=relativedelta(years=expiry_years)
+        return self._is_date_current(self.vaccination_rabies, expiry)
     
     def is_dhpp_vaccine_current(self, expiry_years=1):
-        """Checks if the dhpp vaccine is current (assumes 1 or 3 year validity)."""
-        if not self.vaccination_dhpp:
-            return False # Unknown or never vaccinated
-        vax_date = self.vaccination_dhpp
-        if isinstance(vax_date,datetime.datetime):
-            vax_date.date()
-        expiry_date = vax_date + datetime.timedelta(days=expiry_years * 365)
-        return timezone.now().date() <= expiry_date
+        """
+        Checks if the DHPP vaccine is current.
+        Default expiry is 1 year, pass relativedelta(years=3) for 3-year boosters.
+        """
+        expiry=relativedelta(years=expiry_years)
+        return self._is_date_current(self.vaccination_dhpp, expiry)
     
     def is_bordetella_vaccine_current(self, expiry_years=1):
-        """Checks if the bordetella vaccine is current (assumes 1 or 3 year validity)."""
-        if not self.vaccination_bordetella:
-            return False # Unknown or never vaccinated
-        vax_date = self.vaccination_bordetella
-        if isinstance(vax_date,datetime.datetime):
-            vax_date.date()
-        expiry_date = vax_date + datetime.timedelta(days=expiry_years * 365)
-        return timezone.now().date() <= expiry_date
+        """
+        Checks if the Bordetella vaccine is current.
+        Default expiry is 6 months, adjust as needed (e.g., relativedelta(years=1)).
+        """
+        expiry=relativedelta(years=expiry_years)
+        return self._is_date_current(self.vaccination_bordetella, expiry)
     
     def is_parasite_screen_current(self, expiry_years=1):
-        """Checks if the parasite screening is current (assumes 1 or 3 year validity)."""
-        if not self.parasites:
-            return False # Unknown or never vaccinated
-        vax_date = self.parasites
-        if isinstance(vax_date,datetime.datetime):
-            vax_date.date()
-        expiry_date = vax_date + datetime.timedelta(days=expiry_years * 365)
-        return timezone.now().date() <= expiry_date
+        """
+        Checks if the parasite screening/prevention is current.
+        Default expiry is 1 year.
+        """
+        expiry=relativedelta(years=expiry_years)
+        return self._is_date_current(self.parasites, expiry)
     
     def is_vaccination_cleared(self, expiry_years=1):
         """Checks if the all vaccines and parasite screening are current (assumes 1 or 3 year validity)."""
@@ -282,5 +309,12 @@ class Dog(models.Model):
     def short_description(self):
         """Provides a brief description of the dog."""
         sex_display = self.get_sex_display() if self.sex else 'Unknown sex'
-        altered_display = "Altered" if self.is_altered else ("Intact" if self.is_altered is False else "Altered Status Unknown")
-        return f"{self.breed or "Mixed Breed"} - {altered_display} ({sex_display})"
+        # Handle the NullBooleanField for is_altered
+        if self.is_altered is True:
+            altered_display = "Altered"
+        elif self.is_altered is False:
+            altered_display = "Intact"
+        else: # is_altered is None
+            altered_display = "Altered Status Unknown"
+        breed_display = self.breed or "Mixed Breed" # Handle blank breed
+        return f"{breed_display} - {altered_display} ({sex_display})"
