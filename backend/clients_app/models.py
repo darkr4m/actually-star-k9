@@ -1,8 +1,19 @@
 from django.db import models
+from django.utils import timezone # For date calculations
 from django.utils.translation import gettext_lazy as _
 from django.core import validators as v
 from phonenumber_field.modelfields import PhoneNumberField
 from common_app.validators import validate_name
+
+# Manager for Soft Delete: Filters out deleted clients by default
+class ActiveClientManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+    
+# Manager to access all clients, including deleted ones
+class AllClientManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()
 
 class Client(models.Model):
     """Represents a client (dog owner) in the system."""
@@ -66,9 +77,25 @@ class Client(models.Model):
         verbose_name=_("Active Status"),
         help_text=_("Designates whether this client profile is considered active. Unselect this instead of deleting profiles to archive.")
     )
+    # Field for soft delete
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name=_("Deleted"),
+        help_text=_("Mark as deleted instead of actually deleting the record.")
+    )
     # --- Timestamps ---
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created At"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated At"))
+    # Timestamp for soft delete
+    deleted_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name=_("Deleted At")
+    )
+
+    # --- Managers ---
+    objects = ActiveClientManager() # Default manager filters out deleted clients
+    all_objects = AllClientManager() # Manager to access all clients
 
     class Meta:
         verbose_name = _('Client')
@@ -82,4 +109,29 @@ class Client(models.Model):
     
     def __str__(self):
         """String representation for the Client model, used in admin and elsewhere."""
-        return self.get_full_name
+        name= self.get_full_name
+        status_indicators = []
+        if not self.is_active:
+            status_indicators.append("Inactive")
+        if self.is_deleted:
+            status_indicators.append("Deleted")
+        status_str = f"({', '.join(status_indicators)})" if status_indicators else ""
+        return f"{name}{status_str}"
+    
+    # Override delete() method for soft delete
+    def delete(self, using=None):
+        """Overrides delete to implement soft delete."""
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        # Deactivate the client when deleting
+        self.is_active = False
+        self.save(using=using)
+
+    # Method to restore a soft-deleted client
+    def restore(self):
+        """Restores a soft-deleted client."""
+        self.is_deleted = False
+        self.deleted_at = None
+        # Reactivate the client upon restore
+        self.is_active = True
+        self.save()
